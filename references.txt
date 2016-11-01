@@ -1,0 +1,10 @@
+
+环境搭建
+1. 在Eclipse Marketplace下载Gradle IDE
+2. 执行右键项目菜单 Gradle -> Refresh All
+
+参考文档
+mybatis http://www.mybatis.org/mybatis-3/zh/java-api.html
+springmvc http://spring.oschina.mopaas.com/
+dbcp http://commons.apache.org/proper/commons-dbcp/configuration.html
+
