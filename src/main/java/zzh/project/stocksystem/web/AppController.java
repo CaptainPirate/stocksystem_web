@@ -135,7 +135,7 @@ public class AppController {
 		return gson.toJson(response);
 	}
 
-	@RequestMapping(value = "/check")
+	@RequestMapping(value = "/check") 
 	@ResponseBody
 	public String check() {
 		BasicResponse response = new BasicResponse();
