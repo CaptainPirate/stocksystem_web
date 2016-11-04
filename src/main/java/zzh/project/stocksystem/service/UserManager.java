@@ -36,4 +36,9 @@ public interface UserManager {
 	 * 获取用户关注列表
 	 */
 	public List<FavorBean> listFavor(Long userId);
+	
+	/**
+	 * 获取个人信息
+	 */
+	public UserBean getUserInfo(Long userId);
 }

@@ -89,4 +89,18 @@ public class UserManagerImpl implements UserManager {
 		}
 		return result;
 	}
+
+	@Override
+	public UserBean getUserInfo(Long userId) {
+		User user = userMapper.get(userId);
+		if (user != null) {
+			UserBean bean = new UserBean();
+			bean.username = user.getUsername();
+			bean.email = user.getEmail();
+			bean.nick = user.getNick();
+			bean.balance = user.getBalance();
+			return bean;
+		}
+		return null;
+	}
 }

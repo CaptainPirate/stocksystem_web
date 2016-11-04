@@ -122,6 +122,18 @@ public class AppController {
 		logger.debug("listFavor resp " + response);
 		return gson.toJson(response);
 	}
+	
+	@RequestMapping(value = "/getinfo", produces = {"application/json;charset=UTF-8"})
+	@ResponseBody
+	public String getInfo(HttpServletRequest request) {
+		long userId = (long) request.getAttribute(Const.REQUEST_CONVERT_USER_KEY);
+		BasicResponse response = new BasicResponse();
+		UserBean bean = userManager.getUserInfo(userId);
+		response.errcode = ErrorCode.SUCCESS;
+		response.data = bean;
+		logger.debug("getInfo resp " + response);
+		return gson.toJson(response);
+	}
 
 	@RequestMapping(value = "/check")
 	@ResponseBody

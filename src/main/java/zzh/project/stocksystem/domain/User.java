@@ -9,7 +9,7 @@ public class User implements Serializable {
 	private String password;
 	private String nick;
 	private String email;
-	private long balance;
+	private float balance;
 	private String accessToken;
 	private Long expiresIn;
 
@@ -53,11 +53,11 @@ public class User implements Serializable {
 		this.email = email;
 	}
 
-	public long getBalance() {
+	public float getBalance() {
 		return balance;
 	}
 
-	public void setBalance(long balance) {
+	public void setBalance(float balance) {
 		this.balance = balance;
 	}
 
