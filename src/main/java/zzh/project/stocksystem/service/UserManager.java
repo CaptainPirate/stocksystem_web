@@ -2,6 +2,8 @@ package zzh.project.stocksystem.service;
 
 import java.util.List;
 
+import zzh.project.stocksystem.exception.StockSystemException;
+import zzh.project.stocksystem.vo.AccountBean;
 import zzh.project.stocksystem.vo.FavorBean;
 import zzh.project.stocksystem.vo.UserBean;
 
@@ -41,4 +43,19 @@ public interface UserManager {
 	 * 获取个人信息
 	 */
 	public UserBean getUserInfo(Long userId);
+	
+	/**
+	 * 充值
+	 */
+	public void recharge(Long userId, String carNum, String password, float money) throws StockSystemException;
+	
+	/**
+	 * 绑定卡片 
+	 */
+	public void bindAccount(Long userId, AccountBean account) throws StockSystemException;
+	
+	/**
+	 * 获取用户绑定支付账号 
+	 */
+	public AccountBean getAccountInfo(Long userId);
 }

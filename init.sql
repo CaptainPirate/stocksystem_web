@@ -12,11 +12,12 @@ CREATE TABLE IF NOT EXISTS t_user (
     expires_in bigint default 0
 );
 
-CREATE TABLE IF NOT EXISTS t_card (
+CREATE TABLE IF NOT EXISTS t_account (
 	_id integer PRIMARY KEY AUTO_INCREMENT,
-	card_numbar varchar(255) NOT NULL,
+	card_numbar varchar(255) UNIQUE KEY NOT NULL,
 	real_name varchar(255) NOT NULL,
 	id_number varchar(255) NOT NULL,
+	password varchar(255) NOT NULL,
 	user_id integer NOT NULL,
 	FOREIGN KEY(user_id) REFERENCES t_user(_id)
 );

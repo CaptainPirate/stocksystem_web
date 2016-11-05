@@ -46,5 +46,5 @@ public interface TradeMapper {
 	public List<Trade> findAll();
 
 	@Select("SELECT * FROM " + TABLE_NAME + " WHERE " + USER_ID + " = #{userId}")
-	public List<Trade> findByUserId(@Param("userId") String userId);
+	public List<Trade> findByUserId(@Param("userId") Long userId);
 }

@@ -19,11 +19,17 @@ import com.google.gson.JsonParser;
 
 import zzh.project.stocksystem.Const;
 import zzh.project.stocksystem.ErrorCode;
+import zzh.project.stocksystem.exception.StockSystemException;
 import zzh.project.stocksystem.service.UserManager;
 import zzh.project.stocksystem.util.StringUtil;
 import zzh.project.stocksystem.vo.BasicResponse;
+import zzh.project.stocksystem.vo.AccountBean;
 import zzh.project.stocksystem.vo.FavorBean;
 import zzh.project.stocksystem.vo.UserBean;
+
+/**
+ * 简单的业务接口暴露，没用作后端校验
+ */
 
 @Controller
 @RequestMapping("/app")
@@ -75,7 +81,7 @@ public class AppController {
 			logger.debug("register info ->" + gson.toJson(user));
 			boolean result = userManager.register(user);
 			if (!result) {
-				response.errcode = ErrorCode.USERNAME_ALREADY_EXISTS;
+				response.errcode = ErrorCode.ALREADY_EXISTS;
 				response.errmsg = "user is already exists";
 			}
 		}
@@ -122,8 +128,8 @@ public class AppController {
 		logger.debug("listFavor resp " + response);
 		return gson.toJson(response);
 	}
-	
-	@RequestMapping(value = "/getinfo", produces = {"application/json;charset=UTF-8"})
+
+	@RequestMapping(value = "/getinfo", produces = { "application/json;charset=UTF-8" })
 	@ResponseBody
 	public String getInfo(HttpServletRequest request) {
 		long userId = (long) request.getAttribute(Const.REQUEST_CONVERT_USER_KEY);
@@ -135,7 +141,60 @@ public class AppController {
 		return gson.toJson(response);
 	}
 
-	@RequestMapping(value = "/check") 
+	@RequestMapping(value = "/recharge")
+	@ResponseBody
+	public String recharge(HttpServletRequest request, @RequestBody String body) {
+		long userId = (long) request.getAttribute(Const.REQUEST_CONVERT_USER_KEY);
+		JsonObject json = new JsonParser().parse(body).getAsJsonObject();
+		String carNum = json.get("carNum").getAsString();
+		String password = json.get("password").getAsString();
+		float money = json.get("money").getAsFloat();
+		BasicResponse response = new BasicResponse();
+		response.errcode = ErrorCode.SUCCESS;
+		try {
+			userManager.recharge(userId, carNum, password, money);
+		} catch (StockSystemException e) {
+			response.errcode = e.getErrorCode();
+			response.errmsg = e.getMessage();
+		}
+		logger.debug("recharge resp " + response);
+		return gson.toJson(response);
+	}
+
+	@RequestMapping(value = "/bind")
+	@ResponseBody
+	public String bindAccount(HttpServletRequest request, @RequestBody AccountBean accountBean) {
+		long userId = (long) request.getAttribute(Const.REQUEST_CONVERT_USER_KEY);
+		BasicResponse response = new BasicResponse();
+		response.errcode = ErrorCode.SUCCESS;
+		try {
+			userManager.bindAccount(userId, accountBean);
+		} catch (StockSystemException e) {
+			response.errcode = e.getErrorCode();
+			response.errmsg = e.getMessage();
+		}
+		logger.debug("bindAccount resp " + response);
+		return gson.toJson(response);
+	}
+
+	@RequestMapping(value = "/getaccount", produces = { "application/json;charset=UTF-8" })
+	@ResponseBody
+	public String getAccount(HttpServletRequest request) {
+		long userId = (long) request.getAttribute(Const.REQUEST_CONVERT_USER_KEY);
+		BasicResponse response = new BasicResponse();
+		response.errcode = ErrorCode.SUCCESS;
+		AccountBean bean = userManager.getAccountInfo(userId);
+		if (bean == null) {
+			response.errcode = ErrorCode.NOT_EXITS;
+			response.errmsg = "not bound yet";
+		} else {
+			response.data = bean;
+		}
+		logger.debug("getAccount resp " + response);
+		return gson.toJson(response);
+	}
+
+	@RequestMapping(value = "/check")
 	@ResponseBody
 	public String check() {
 		BasicResponse response = new BasicResponse();

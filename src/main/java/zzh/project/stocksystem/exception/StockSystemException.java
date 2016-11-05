@@ -1,20 +1,18 @@
 package zzh.project.stocksystem.exception;
 
 /**
- * Service层业务异常 TODO 待处理
+ * Service层业务异常
  */
 public class StockSystemException extends Exception {
 	private static final long serialVersionUID = -515967510963652282L;
+	private final int errCode;
 
-	public StockSystemException(String msg) {
+	public StockSystemException(String msg, int errCode) {
 		super(msg);
-	}
-
-	public StockSystemException(String msg, Throwable clause) {
-		super(msg, clause);
+		this.errCode = errCode;
 	}
 
 	public int getErrorCode() {
-		return 0;
+		return errCode;
 	}
 }

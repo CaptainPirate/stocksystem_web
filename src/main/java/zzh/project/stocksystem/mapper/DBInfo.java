@@ -16,12 +16,13 @@ public class DBInfo {
 		}
 
 		// 银行卡表
-		public static final class Card {
-			public static final String TABLE_NAME = "t_card";
+		public static final class Account {
+			public static final String TABLE_NAME = "t_account";
 			public static final String ID = "_id";
 			public static final String CARD_NUMBER = "card_numbar";
 			public static final String REAL_NAME = "real_name";
 			public static final String ID_NUM = "id_number";
+			public static final String PASSWORD = "password";
 			public static final String USER_ID = "user_id";
 		}
 

@@ -2,12 +2,13 @@ package zzh.project.stocksystem.domain;
 
 import java.io.Serializable;
 
-public class Card implements Serializable {
+public class Account implements Serializable {
 	private static final long serialVersionUID = -9054422685838699091L;
 	private Long _id; // 数据库主键
 	private String cardNum;
 	private String realName;
 	private String idNum;
+	private String password;
 	private Long userId;
 
 	public Long get_id() {
@@ -42,6 +43,14 @@ public class Card implements Serializable {
 		this.idNum = idNum;
 	}
 	
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
+	}
+
 	public Long getUserId() {
 		return userId;
 	}
@@ -66,7 +75,7 @@ public class Card implements Serializable {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		Card other = (Card) obj;
+		Account other = (Account) obj;
 		if (cardNum == null) {
 			if (other.cardNum != null)
 				return false;
