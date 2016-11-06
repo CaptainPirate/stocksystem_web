@@ -1,7 +1,10 @@
 package zzh.project.stocksystem.service.impl;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,15 +15,21 @@ import org.springframework.transaction.annotation.Transactional;
 import zzh.project.stocksystem.ErrorCode;
 import zzh.project.stocksystem.domain.Account;
 import zzh.project.stocksystem.domain.Favor;
+import zzh.project.stocksystem.domain.Stock;
+import zzh.project.stocksystem.domain.Trade;
 import zzh.project.stocksystem.domain.User;
 import zzh.project.stocksystem.exception.StockSystemException;
 import zzh.project.stocksystem.mapper.AccountMapper;
 import zzh.project.stocksystem.mapper.FavorMapper;
+import zzh.project.stocksystem.mapper.StockMapper;
+import zzh.project.stocksystem.mapper.TradeMapper;
 import zzh.project.stocksystem.mapper.UserMapper;
 import zzh.project.stocksystem.service.UserManager;
 import zzh.project.stocksystem.util.BeanConvert;
 import zzh.project.stocksystem.vo.AccountBean;
 import zzh.project.stocksystem.vo.FavorBean;
+import zzh.project.stocksystem.vo.StockBean;
+import zzh.project.stocksystem.vo.TradeBean;
 import zzh.project.stocksystem.vo.UserBean;
 
 @Service
@@ -33,8 +42,14 @@ public class UserManagerImpl implements UserManager {
 	@Autowired
 	private FavorMapper favorMapper;
 	@Autowired
-	private AccountMapper cardMapper;
+	private AccountMapper accountMapper;
+	@Autowired
+	private TradeMapper tradeMapper;
+	@Autowired
+	private StockMapper stockMapper;
 
+	Timer timer = new Timer(true);
+	
 	@Override
 	public boolean register(UserBean user) {
 		try {
@@ -113,10 +128,10 @@ public class UserManagerImpl implements UserManager {
 
 	@Override
 	public void recharge(Long userId, String carNum, String password, float money) throws StockSystemException {
-		Account card = cardMapper.findByUserId(userId);
-		if (card != null) {
-			if (card.getUserId().equals(userId)) {
-				if (card.getPassword().equals(password)) {
+		Account account = accountMapper.findByUserId(userId);
+		if (account != null) {
+			if (account.getUserId().equals(userId)) {
+				if (account.getPassword().equals(password)) {
 					User user = userMapper.get(userId);
 					user.setBalance(user.getBalance() + money);
 					userMapper.update(user);
@@ -133,23 +148,23 @@ public class UserManagerImpl implements UserManager {
 
 	@Override
 	public void bindAccount(Long userId, AccountBean cardBean) throws StockSystemException {
-		Account card = cardMapper.findByCardNum(cardBean.carNum);
-		if (card != null) {
+		Account account = accountMapper.findByCardNum(cardBean.cardNum);
+		if (account != null) {
 			throw new StockSystemException("该支付账号已被绑定", ErrorCode.ALREADY_EXISTS);
 		}
-		card = cardMapper.findByUserId(userId);
-		if (card != null) {
+		account = accountMapper.findByUserId(userId);
+		if (account != null) {
 			throw new StockSystemException("已绑定支付账号", ErrorCode.ALREADY_EXISTS);
 		}
 		User user = userMapper.get(userId);
 		if (user != null) {
-			card = new Account();
-			card.setCardNum(cardBean.carNum);
-			card.setIdNum(cardBean.idNum);
-			card.setRealName(cardBean.realName);
-			card.setPassword(cardBean.password);
-			card.setUserId(userId);
-			cardMapper.save(card);
+			account = new Account();
+			account.setCardNum(cardBean.cardNum);
+			account.setIdNum(cardBean.idNum);
+			account.setRealName(cardBean.realName);
+			account.setPassword(cardBean.password);
+			account.setUserId(userId);
+			accountMapper.save(account);
 		} else {
 			throw new StockSystemException("该用户不存在", ErrorCode.NOT_EXITS);
 		}
@@ -157,15 +172,142 @@ public class UserManagerImpl implements UserManager {
 
 	@Override
 	public AccountBean getAccountInfo(Long userId) {
-		Account card = cardMapper.findByUserId(userId);
-		if (card != null) {
+		Account account = accountMapper.findByUserId(userId);
+		if (account != null) {
 			AccountBean bean = new AccountBean();
-			bean.carNum = card.getCardNum();
-			bean.idNum = card.getIdNum();
-			bean.realName = card.getRealName();
-			System.out.println(bean.carNum);
+			bean.cardNum = account.getCardNum();
+			bean.idNum = account.getIdNum();
+			bean.realName = account.getRealName();
+			System.out.println(bean.cardNum);
 			return bean;
 		}
 		return null;
+	}
+
+	@Override
+	public List<TradeBean> listTrade(Long userId) {
+		List<Trade> trades = tradeMapper.findByUserId(userId);
+		List<TradeBean> beans = new ArrayList<>(trades.size());
+		for (Trade trade : trades) {
+			TradeBean bean = new TradeBean();
+			bean.stockCode = trade.getStockCode();
+			bean.stockName = trade.getStockName();
+			bean.type = trade.getTradeType() == 0 ? "sell" : "buy";
+			bean.uPrice = trade.getuPrice() + "";
+			bean.amount = trade.getAmount();
+			beans.add(bean);
+		}
+		return beans;
+	}
+
+	@Override
+	public void buy(Long userId, String gid, String name, float uPrice, int amount) throws StockSystemException {
+		/*
+		 * 购入后不会直接转入持有股票，需要先审核，这里模拟1分钟后自动审核
+		 */
+		User user = userMapper.get(userId);
+		if (user != null) {
+			if (user.getBalance() < uPrice * amount) {
+				throw new StockSystemException("余额不足", ErrorCode.BALANCE_NOT_ENOUGH);
+			}
+			user.setBalance(user.getBalance() - uPrice * amount);
+			userMapper.update(user);
+			
+			Trade trade = new Trade();
+			trade.setStockCode(gid);
+			trade.setStockName(name);
+			trade.setUserId(userId);
+			trade.setTradeType(1);
+			trade.setStatus(0);
+			trade.setAmount(amount);
+			trade.setuPrice(uPrice);
+			trade.setTradeIn(new Date());
+			tradeMapper.save(trade);
+			
+			timer.schedule(new TimerTask() {
+				@Override
+				public void run() {
+					verified(trade.get_id());
+				}
+			}, 1000 * 60);
+		}
+	}
+
+	@Override
+	public void sell(Long userId, String gid, String name, float uPrice, int amount) throws StockSystemException {
+		/*
+		 * 卖出后不会直接转入持有股票，需要先审核，这里模拟1分钟后自动审核
+		 */
+		User user = userMapper.get(userId);
+		if (user != null) {
+			user.setBalance(user.getBalance() + uPrice * amount);
+			userMapper.update(user);
+			
+			Stock stock = stockMapper.findByUserIdAndStockCode(userId, gid);
+			if (stock == null || stock.getTotal() < amount) {
+				throw new StockSystemException("持有股票不足", ErrorCode.NOT_EXITS);
+			}
+			
+			Trade trade = new Trade();
+			trade.setStockCode(gid);
+			trade.setStockName(name);
+			trade.setUserId(userId);
+			trade.setTradeType(0);
+			trade.setStatus(0);
+			trade.setAmount(amount);
+			trade.setuPrice(uPrice);
+			trade.setTradeIn(new Date());
+			tradeMapper.save(trade);
+			
+			timer.schedule(new TimerTask() {
+				@Override
+				public void run() {
+					verified(trade.get_id());
+				}
+			}, 1000 * 60);
+		}
+	}
+
+	@Override
+	public void verified(Long tradeId) {
+		Trade trade = tradeMapper.get(tradeId);
+		if (trade != null) {
+			User user = userMapper.get(trade.getUserId());
+			if (trade.getTradeType() == 0) {
+				user.setBalance(user.getBalance() + trade.getuPrice() * trade.getAmount());
+				userMapper.update(user);
+			} else {
+				user.setBalance(user.getBalance() - trade.getuPrice() * trade.getAmount());
+				userMapper.update(user);
+			}
+			
+			Stock stock = stockMapper.findByUserIdAndStockCode(trade.getUserId(), trade.getStockCode());
+			if (stock != null ) {
+				stock.setTotal(stock.getTotal() + trade.getAmount());
+				stockMapper.update(stock);
+			} else {
+				stock = new Stock();
+				stock.setStockCode(trade.getStockCode());
+				stock.setTotal(trade.getAmount());
+				stock.setUserId(trade.getUserId());
+				stockMapper.save(stock);
+			}
+			
+			trade.setStatus(1);
+			tradeMapper.update(trade);
+		}
+	}
+
+	@Override
+	public List<StockBean> listStock(Long userId) {
+		List<Stock> stocks = stockMapper.findByUserId(userId);
+		List<StockBean> beans = new ArrayList<>(stocks.size());
+		for (Stock stock : stocks) {
+			StockBean bean = new StockBean();
+			bean.stockCode = stock.getStockCode();
+			bean.totoal = stock.getTotal();
+			beans.add(bean);
+		}
+		return beans;
 	}
 }

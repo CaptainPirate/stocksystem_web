@@ -10,4 +10,5 @@ public final class ErrorCode {
 	public static final int ALREADY_EXISTS = 1003;
 	public static final int NOT_EXITS = 1004;
 	public static final int PASS_WRONG = 1005;
+	public static final int BALANCE_NOT_ENOUGH = 1006;
 }

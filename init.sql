@@ -32,9 +32,20 @@ CREATE TABLE IF NOT EXISTS t_favor (
 CREATE TABLE IF NOT EXISTS t_trade (
 	_id integer PRIMARY KEY AUTO_INCREMENT,
 	stock_code varchar(255) NOT NULL,
+	stock_name varchar(255) NOT NULL,
 	user_id integer NOT NULL,
-	trade_type tinyint(1), -- 0 卖出，1购入
-	status integer(1),
+	trade_type tinyint(1) NOT NULL, -- 0 卖出，1购入
+	status tinyint(1) NOT NULL, -- 0 处理中，1 处理完毕
+	amount integer NOT NULL default 0,
+	unit_price decimal NOT NULL default 0,
 	trade_in datetime,
+	FOREIGN KEY(user_id) REFERENCES t_user(_id)
+);
+
+CREATE TABLE IF NOT EXISTS t_stock (
+	_id integer PRIMARY KEY AUTO_INCREMENT,
+	stock_code varchar(255) NOT NULL,
+	user_id integer NOT NULL,
+	total tinyint(1) NOT NULL,
 	FOREIGN KEY(user_id) REFERENCES t_user(_id)
 );

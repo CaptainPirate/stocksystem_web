@@ -25,6 +25,8 @@ import zzh.project.stocksystem.util.StringUtil;
 import zzh.project.stocksystem.vo.BasicResponse;
 import zzh.project.stocksystem.vo.AccountBean;
 import zzh.project.stocksystem.vo.FavorBean;
+import zzh.project.stocksystem.vo.StockBean;
+import zzh.project.stocksystem.vo.TradeBean;
 import zzh.project.stocksystem.vo.UserBean;
 
 /**
@@ -40,7 +42,7 @@ public class AppController {
 	@Autowired
 	private Gson gson;
 
-	@RequestMapping(value = "/login")
+	@RequestMapping(value = "/login", produces = { "application/json;charset=UTF-8" })
 	@ResponseBody
 	public String login(@RequestBody String body) {
 		logger.debug("login req " + body);
@@ -72,7 +74,7 @@ public class AppController {
 		return gson.toJson(response);
 	}
 
-	@RequestMapping("/register")
+	@RequestMapping(value = "/register", produces = { "application/json;charset=UTF-8" })
 	@ResponseBody
 	public BasicResponse register(@RequestBody UserBean user) {
 		logger.debug("register req " + user);
@@ -88,7 +90,7 @@ public class AppController {
 		return response;
 	}
 
-	@RequestMapping(value = "/favor")
+	@RequestMapping(value = "/favor", produces = { "application/json;charset=UTF-8" })
 	@ResponseBody
 	public String favor(HttpServletRequest request, @RequestBody String body) {
 		logger.debug("favor req " + body);
@@ -102,7 +104,7 @@ public class AppController {
 		return gson.toJson(response);
 	}
 
-	@RequestMapping(value = "/unfavor")
+	@RequestMapping(value = "/unFavor", produces = { "application/json;charset=UTF-8" })
 	@ResponseBody
 	public String unfavor(HttpServletRequest request, @RequestBody String body) {
 		logger.debug("unfavor req " + body);
@@ -116,7 +118,7 @@ public class AppController {
 		return gson.toJson(response);
 	}
 
-	@RequestMapping(value = "/listfavor")
+	@RequestMapping(value = "/listFavor", produces = { "application/json;charset=UTF-8" })
 	@ResponseBody
 	public String listFavor(HttpServletRequest request, @RequestBody String body) {
 		logger.debug("unfavor req " + body);
@@ -129,7 +131,7 @@ public class AppController {
 		return gson.toJson(response);
 	}
 
-	@RequestMapping(value = "/getinfo", produces = { "application/json;charset=UTF-8" })
+	@RequestMapping(value = "/getInfo", produces = { "application/json;charset=UTF-8" })
 	@ResponseBody
 	public String getInfo(HttpServletRequest request) {
 		long userId = (long) request.getAttribute(Const.REQUEST_CONVERT_USER_KEY);
@@ -141,18 +143,18 @@ public class AppController {
 		return gson.toJson(response);
 	}
 
-	@RequestMapping(value = "/recharge")
+	@RequestMapping(value = "/recharge", produces = { "application/json;charset=UTF-8" })
 	@ResponseBody
 	public String recharge(HttpServletRequest request, @RequestBody String body) {
 		long userId = (long) request.getAttribute(Const.REQUEST_CONVERT_USER_KEY);
 		JsonObject json = new JsonParser().parse(body).getAsJsonObject();
-		String carNum = json.get("carNum").getAsString();
+		String cardNum = json.get("cardNum").getAsString();
 		String password = json.get("password").getAsString();
 		float money = json.get("money").getAsFloat();
 		BasicResponse response = new BasicResponse();
 		response.errcode = ErrorCode.SUCCESS;
 		try {
-			userManager.recharge(userId, carNum, password, money);
+			userManager.recharge(userId, cardNum, password, money);
 		} catch (StockSystemException e) {
 			response.errcode = e.getErrorCode();
 			response.errmsg = e.getMessage();
@@ -161,7 +163,7 @@ public class AppController {
 		return gson.toJson(response);
 	}
 
-	@RequestMapping(value = "/bind")
+	@RequestMapping(value = "/bind", produces = { "application/json;charset=UTF-8" })
 	@ResponseBody
 	public String bindAccount(HttpServletRequest request, @RequestBody AccountBean accountBean) {
 		long userId = (long) request.getAttribute(Const.REQUEST_CONVERT_USER_KEY);
@@ -177,7 +179,7 @@ public class AppController {
 		return gson.toJson(response);
 	}
 
-	@RequestMapping(value = "/getaccount", produces = { "application/json;charset=UTF-8" })
+	@RequestMapping(value = "/getAccount", produces = { "application/json;charset=UTF-8" })
 	@ResponseBody
 	public String getAccount(HttpServletRequest request) {
 		long userId = (long) request.getAttribute(Const.REQUEST_CONVERT_USER_KEY);
@@ -193,8 +195,75 @@ public class AppController {
 		logger.debug("getAccount resp " + response);
 		return gson.toJson(response);
 	}
+	
+	@RequestMapping(value = "/listTrade", produces = { "application/json;charset=UTF-8" })
+	@ResponseBody
+	public String listTrade(HttpServletRequest request) {
+		long userId = (long) request.getAttribute(Const.REQUEST_CONVERT_USER_KEY);
+		BasicResponse response = new BasicResponse();
+		response.errcode = ErrorCode.SUCCESS;
+		List<TradeBean> beans = userManager.listTrade(userId);
+		response.data = beans;
+		logger.debug("listTrade resp " + response);
+		return gson.toJson(response);
+	}
+	
+	@RequestMapping(value = "/buy", produces = { "application/json;charset=UTF-8" })
+	@ResponseBody
+	public String buy(HttpServletRequest request, @RequestBody String body) {
+		long userId = (long) request.getAttribute(Const.REQUEST_CONVERT_USER_KEY);
+		JsonObject json = new JsonParser().parse(body).getAsJsonObject();
+		String gid = json.get("gid").getAsString();
+		String name = json.get("name").getAsString();
+		float uPrice = json.get("uPrice").getAsFloat();
+		int amount = json.get("amount").getAsInt();
+		BasicResponse response = new BasicResponse();
+		response.errcode = ErrorCode.SUCCESS;
+		try {
+			userManager.buy(userId, gid, name, uPrice, amount);
+		} catch (StockSystemException e) {
+			response.errcode = e.getErrorCode();
+			response.errmsg = e.getMessage();
+		}
+		logger.debug("buy resp " + response);
+		return gson.toJson(response);
+	}
+	
+	
+	@RequestMapping(value = "/sell", produces = { "application/json;charset=UTF-8" })
+	@ResponseBody
+	public String sell(HttpServletRequest request, @RequestBody String body) {
+		long userId = (long) request.getAttribute(Const.REQUEST_CONVERT_USER_KEY);
+		JsonObject json = new JsonParser().parse(body).getAsJsonObject();
+		String gid = json.get("gid").getAsString();
+		String name = json.get("name").getAsString();
+		float uPrice = json.get("uPrice").getAsFloat();
+		int amount = json.get("amount").getAsInt();
+		BasicResponse response = new BasicResponse();
+		response.errcode = ErrorCode.SUCCESS;
+		try {
+			userManager.sell(userId, gid, name, uPrice, amount);
+		} catch (StockSystemException e) {
+			response.errcode = e.getErrorCode();
+			response.errmsg = e.getMessage();
+		}
+		logger.debug("sell resp " + response);
+		return gson.toJson(response);
+	}
+	
+	@RequestMapping(value = "/listStock", produces = { "application/json;charset=UTF-8" })
+	@ResponseBody
+	public String listStock(HttpServletRequest request) {
+		long userId = (long) request.getAttribute(Const.REQUEST_CONVERT_USER_KEY);
+		BasicResponse response = new BasicResponse();
+		response.errcode = ErrorCode.SUCCESS;
+		List<StockBean> beans = userManager.listStock(userId);
+		response.data = beans;
+		logger.debug("listStock resp " + response);
+		return gson.toJson(response);
+	}
 
-	@RequestMapping(value = "/check")
+	@RequestMapping(value = "/check", produces = { "application/json;charset=UTF-8" })
 	@ResponseBody
 	public String check() {
 		BasicResponse response = new BasicResponse();

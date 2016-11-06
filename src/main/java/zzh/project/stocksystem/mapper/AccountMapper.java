@@ -45,7 +45,8 @@ public interface AccountMapper {
 	@Results({
 		@Result(property="cardNum", column = CARD_NUMBER),
 		@Result(property="realName", column = REAL_NAME), 
-		@Result(property="idNum", column = ID_NUM)
+		@Result(property="idNum", column = ID_NUM),
+		@Result(property="userId", column = USER_ID)
 	})
 	public Account get(@Param("_id") long id);
 
@@ -53,7 +54,8 @@ public interface AccountMapper {
 	@Results({
 		@Result(property="cardNum", column = CARD_NUMBER),
 		@Result(property="realName", column = REAL_NAME), 
-		@Result(property="idNum", column = ID_NUM)
+		@Result(property="idNum", column = ID_NUM),
+		@Result(property="userId", column = USER_ID)
 	})
 	public List<Account> findAll();
 
@@ -61,7 +63,8 @@ public interface AccountMapper {
 	@Results({
 		@Result(property="cardNum", column = CARD_NUMBER),
 		@Result(property="realName", column = REAL_NAME), 
-		@Result(property="idNum", column = ID_NUM)
+		@Result(property="idNum", column = ID_NUM),
+		@Result(property="userId", column = USER_ID)
 	})
 	public Account findByUserId(@Param("userId") Long userId);
 	
@@ -69,7 +72,8 @@ public interface AccountMapper {
 	@Results({
 		@Result(property="cardNum", column = CARD_NUMBER),
 		@Result(property="realName", column = REAL_NAME), 
-		@Result(property="idNum", column = ID_NUM)
+		@Result(property="idNum", column = ID_NUM),
+		@Result(property="userId", column = USER_ID)
 	})
 	public Account findByCardNum(@Param("cardNum") String cardNum);
 }

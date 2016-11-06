@@ -5,6 +5,8 @@ import java.util.List;
 import zzh.project.stocksystem.exception.StockSystemException;
 import zzh.project.stocksystem.vo.AccountBean;
 import zzh.project.stocksystem.vo.FavorBean;
+import zzh.project.stocksystem.vo.StockBean;
+import zzh.project.stocksystem.vo.TradeBean;
 import zzh.project.stocksystem.vo.UserBean;
 
 public interface UserManager {
@@ -58,4 +60,29 @@ public interface UserManager {
 	 * 获取用户绑定支付账号 
 	 */
 	public AccountBean getAccountInfo(Long userId);
+	
+	/**
+	 * 获取交易记录
+	 */
+	public List<TradeBean> listTrade(Long userId);
+	
+	/**
+	 * 购入
+	 */
+	public void buy(Long userId, String gid, String name, float uPrice, int amount) throws StockSystemException;
+	
+	/**
+	 * 卖出
+	 */
+	public void sell(Long userId, String gid, String name, float uPrice, int amount) throws StockSystemException;
+	
+	/**
+	 * 审核
+	 */
+	public void verified(Long tradeId);
+	
+	/**
+	 * 列出持有股票
+	 */
+	public List<StockBean> listStock(Long userId);
 }

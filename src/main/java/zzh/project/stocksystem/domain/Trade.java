@@ -7,9 +7,12 @@ public class Trade implements Serializable {
 	private static final long serialVersionUID = 2416697974083175672L;
 	private Long _id; // 数据库主键
 	private String stockCode;
+	private String stockName;
 	private Long userId;
-	private int tradeType;
-	private int status;
+	private int tradeType; // 0 卖出，1购入
+	private int status; //  0 处理中，1 处理完毕
+	private int amount;
+	private float uPrice;
 	private Date tradeIn;
 
 	public Long get_id() {
@@ -26,6 +29,14 @@ public class Trade implements Serializable {
 
 	public void setStockCode(String stockCode) {
 		this.stockCode = stockCode;
+	}
+	
+	public String getStockName() {
+		return stockName;
+	}
+
+	public void setStockName(String stockName) {
+		this.stockName = stockName;
 	}
 
 	public Long getUserId() {
@@ -50,6 +61,22 @@ public class Trade implements Serializable {
 
 	public void setStatus(int status) {
 		this.status = status;
+	}
+
+	public int getAmount() {
+		return amount;
+	}
+
+	public void setAmount(int amount) {
+		this.amount = amount;
+	}
+
+	public float getuPrice() {
+		return uPrice;
+	}
+
+	public void setuPrice(float uPrice) {
+		this.uPrice = uPrice;
 	}
 
 	public Date getTradeIn() {
