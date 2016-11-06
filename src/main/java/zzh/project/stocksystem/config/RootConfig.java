@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Import;
 
 @Configuration
 @ComponentScan({ "zzh.project.stocksystem.service" })
-@Import({ PersistenceConfig.class })
+@Import({ PersistenceConfig.class, PushConfig.class })
 public class RootConfig {
 
 }

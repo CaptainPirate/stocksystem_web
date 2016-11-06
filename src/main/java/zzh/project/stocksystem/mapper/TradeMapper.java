@@ -55,7 +55,7 @@ public interface TradeMapper {
 	})
 	public Trade get(@Param("_id") long id);
 
-	@Select("SELECT * FROM " + TABLE_NAME)
+	@Select("SELECT * FROM " + TABLE_NAME + " order by " + TRADE_IN + " desc")
 	@Results({
 		@Result(property= "stockCode", column = STOCK_CODE),
 		@Result(property= "stockName", column = STOCK_NAME),
@@ -66,7 +66,7 @@ public interface TradeMapper {
 	})
 	public List<Trade> findAll();
 
-	@Select("SELECT * FROM " + TABLE_NAME + " WHERE " + USER_ID + " = #{userId}")
+	@Select("SELECT * FROM " + TABLE_NAME + " WHERE " + USER_ID + " = #{userId} order by " + TRADE_IN + " desc limit 30")
 	@Results({
 		@Result(property= "stockCode", column = STOCK_CODE),
 		@Result(property= "stockName", column = STOCK_NAME),

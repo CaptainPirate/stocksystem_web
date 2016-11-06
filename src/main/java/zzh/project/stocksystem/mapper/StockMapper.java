@@ -36,7 +36,7 @@ public interface StockMapper {
 			+ STOCK_CODE + " = #{s.stockCode} , " 
 			+ USER_ID + " = #{s.userId} ,  "
 			+ TOTAL + " = #{s.total}  "
-			+ "WHERE " + ID + " = #{f._id}")
+			+ "WHERE " + ID + " = #{s._id}")
 	public int update(@Param("s") Stock stock);
 
 	@Select("SELECT * FROM " + TABLE_NAME + " WHERE " + ID + " = #{_id}")

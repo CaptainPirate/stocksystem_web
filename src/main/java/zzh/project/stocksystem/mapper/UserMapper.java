@@ -43,12 +43,24 @@ public interface UserMapper {
 	public int update(@Param("user") User user);
 
 	@Select("SELECT * FROM " + TABLE_NAME + " WHERE " + ID + " = #{_id}")
+	@Results({
+		@Result(property="accessToken", column = ACCESS_TOKEN),
+		@Result(property="expiresIn", column = EXPIRES_IN), 
+	})
 	public User get(@Param("_id") long id);
 
 	@Select("SELECT * FROM " + TABLE_NAME)
+	@Results({
+		@Result(property="accessToken", column = ACCESS_TOKEN),
+		@Result(property="expiresIn", column = EXPIRES_IN), 
+	})
 	public List<User> findAll();
 
 	@Select("SELECT * FROM " + TABLE_NAME + " WHERE " + USERNAME + " = #{username}")
+	@Results({
+		@Result(property="accessToken", column = ACCESS_TOKEN),
+		@Result(property="expiresIn", column = EXPIRES_IN), 
+	})
 	public User findByUsername(@Param("username") String username);
 	
 	@Select("SELECT * FROM " + TABLE_NAME + " WHERE " + ACCESS_TOKEN + " = #{accessToken}")

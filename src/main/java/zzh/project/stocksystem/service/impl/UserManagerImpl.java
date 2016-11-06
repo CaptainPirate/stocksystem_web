@@ -1,5 +1,6 @@
 package zzh.project.stocksystem.service.impl;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -12,6 +13,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import cn.jiguang.common.resp.APIConnectionException;
+import cn.jiguang.common.resp.APIRequestException;
+import cn.jpush.api.JPushClient;
+import cn.jpush.api.push.PushResult;
+import cn.jpush.api.push.model.Platform;
+import cn.jpush.api.push.model.PushPayload;
+import cn.jpush.api.push.model.audience.Audience;
+import cn.jpush.api.push.model.notification.Notification;
 import zzh.project.stocksystem.ErrorCode;
 import zzh.project.stocksystem.domain.Account;
 import zzh.project.stocksystem.domain.Favor;
@@ -33,7 +42,7 @@ import zzh.project.stocksystem.vo.TradeBean;
 import zzh.project.stocksystem.vo.UserBean;
 
 @Service
-@Transactional
+@Transactional(rollbackFor = Throwable.class)
 public class UserManagerImpl implements UserManager {
 	private final Logger logger = LoggerFactory.getLogger(UserManagerImpl.class);
 
@@ -47,9 +56,11 @@ public class UserManagerImpl implements UserManager {
 	private TradeMapper tradeMapper;
 	@Autowired
 	private StockMapper stockMapper;
+	@Autowired
+	JPushClient jPushClient;
 
 	Timer timer = new Timer(true);
-	
+
 	@Override
 	public boolean register(UserBean user) {
 		try {
@@ -188,13 +199,16 @@ public class UserManagerImpl implements UserManager {
 	public List<TradeBean> listTrade(Long userId) {
 		List<Trade> trades = tradeMapper.findByUserId(userId);
 		List<TradeBean> beans = new ArrayList<>(trades.size());
+		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		for (Trade trade : trades) {
 			TradeBean bean = new TradeBean();
 			bean.stockCode = trade.getStockCode();
 			bean.stockName = trade.getStockName();
 			bean.type = trade.getTradeType() == 0 ? "sell" : "buy";
+			bean.status = trade.getStatus();
 			bean.uPrice = trade.getuPrice() + "";
 			bean.amount = trade.getAmount();
+			bean.date = dateFormat.format(trade.getTradeIn());
 			beans.add(bean);
 		}
 		return beans;
@@ -212,7 +226,7 @@ public class UserManagerImpl implements UserManager {
 			}
 			user.setBalance(user.getBalance() - uPrice * amount);
 			userMapper.update(user);
-			
+
 			Trade trade = new Trade();
 			trade.setStockCode(gid);
 			trade.setStockName(name);
@@ -223,31 +237,42 @@ public class UserManagerImpl implements UserManager {
 			trade.setuPrice(uPrice);
 			trade.setTradeIn(new Date());
 			tradeMapper.save(trade);
-			
-			timer.schedule(new TimerTask() {
+
+			TimerTask task = new TimerTask() {
 				@Override
 				public void run() {
 					verified(trade.get_id());
 				}
-			}, 1000 * 60);
+			};
+
+			try {
+				timer.schedule(task, 1000 * 60);
+			} catch (IllegalStateException e) {
+				timer = new Timer(true);
+				timer.schedule(task, 1000 * 60);
+			}
 		}
 	}
 
 	@Override
 	public void sell(Long userId, String gid, String name, float uPrice, int amount) throws StockSystemException {
 		/*
-		 * 卖出后不会直接转入持有股票，需要先审核，这里模拟1分钟后自动审核
+		 * 卖出后，从持有股票中移除相应数量，插入到待处理交易记录 但余额不会马上增加，需要先审核，这里模拟1分钟后自动审核
 		 */
 		User user = userMapper.get(userId);
 		if (user != null) {
-			user.setBalance(user.getBalance() + uPrice * amount);
-			userMapper.update(user);
-			
 			Stock stock = stockMapper.findByUserIdAndStockCode(userId, gid);
 			if (stock == null || stock.getTotal() < amount) {
 				throw new StockSystemException("持有股票不足", ErrorCode.NOT_EXITS);
+			} else {
+				stock.setTotal(stock.getTotal() - amount);
+				if (stock.getTotal() == 0) {
+					stockMapper.delete(stock.get_id());
+				} else {
+					stockMapper.update(stock);
+				}
 			}
-			
+
 			Trade trade = new Trade();
 			trade.setStockCode(gid);
 			trade.setStockName(name);
@@ -258,13 +283,13 @@ public class UserManagerImpl implements UserManager {
 			trade.setuPrice(uPrice);
 			trade.setTradeIn(new Date());
 			tradeMapper.save(trade);
-			
+
 			timer.schedule(new TimerTask() {
 				@Override
 				public void run() {
 					verified(trade.get_id());
 				}
-			}, 1000 * 60);
+			}, 1000 * 30);
 		}
 	}
 
@@ -273,28 +298,43 @@ public class UserManagerImpl implements UserManager {
 		Trade trade = tradeMapper.get(tradeId);
 		if (trade != null) {
 			User user = userMapper.get(trade.getUserId());
-			if (trade.getTradeType() == 0) {
+			if (trade.getTradeType() == 0) { // 卖出
 				user.setBalance(user.getBalance() + trade.getuPrice() * trade.getAmount());
 				userMapper.update(user);
-			} else {
-				user.setBalance(user.getBalance() - trade.getuPrice() * trade.getAmount());
-				userMapper.update(user);
-			}
-			
+			} 
+
 			Stock stock = stockMapper.findByUserIdAndStockCode(trade.getUserId(), trade.getStockCode());
-			if (stock != null ) {
-				stock.setTotal(stock.getTotal() + trade.getAmount());
-				stockMapper.update(stock);
-			} else {
-				stock = new Stock();
-				stock.setStockCode(trade.getStockCode());
-				stock.setTotal(trade.getAmount());
-				stock.setUserId(trade.getUserId());
-				stockMapper.save(stock);
+			if (trade.getTradeType() == 1) {
+				if (stock != null) {
+					stock.setTotal(stock.getTotal() + trade.getAmount());
+					stockMapper.update(stock);
+				} else {
+					stock = new Stock();
+					stock.setStockCode(trade.getStockCode());
+					stock.setTotal(trade.getAmount());
+					stock.setUserId(trade.getUserId());
+					stockMapper.save(stock);
+				}
 			}
-			
 			trade.setStatus(1);
 			tradeMapper.update(trade);
+			try {
+				StringBuilder msg = new StringBuilder("您");
+				msg.append(trade.getTradeType() == 1 ? "购买" : "抛出");
+				msg.append("的 " + trade.getStockName() + " 已受理。");
+				
+				PushPayload payload = PushPayload.newBuilder()
+						.setPlatform(Platform.android())
+						.setAudience(Audience.alias(user.getUsername()))
+						.setNotification(Notification.android(msg.toString(), "后端推送", null))
+						.build();
+				PushResult result = jPushClient.sendPush(payload);
+				logger.debug("push result - " + result);
+			} catch (APIConnectionException e) {
+				e.printStackTrace();
+			} catch (APIRequestException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 
@@ -304,8 +344,8 @@ public class UserManagerImpl implements UserManager {
 		List<StockBean> beans = new ArrayList<>(stocks.size());
 		for (Stock stock : stocks) {
 			StockBean bean = new StockBean();
-			bean.stockCode = stock.getStockCode();
-			bean.totoal = stock.getTotal();
+			bean.gid = stock.getStockCode();
+			bean.total = stock.getTotal();
 			beans.add(bean);
 		}
 		return beans;

@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS t_user (
     password varchar(255) NOT NULL,
 	nick varchar(255) UNIQUE KEY NOT NULL,
 	email varchar(255) UNIQUE KEY NOT NULL,
-	balance decimal default 0,  
+	balance decimal(10, 3) default 0,  
     access_token varchar(255),
     expires_in bigint default 0
 );
@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS t_trade (
 	trade_type tinyint(1) NOT NULL, -- 0 卖出，1购入
 	status tinyint(1) NOT NULL, -- 0 处理中，1 处理完毕
 	amount integer NOT NULL default 0,
-	unit_price decimal NOT NULL default 0,
+	unit_price decimal(10, 3) NOT NULL default 0,
 	trade_in datetime,
 	FOREIGN KEY(user_id) REFERENCES t_user(_id)
 );
