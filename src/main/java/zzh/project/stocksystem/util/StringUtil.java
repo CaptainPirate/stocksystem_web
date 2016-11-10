@@ -3,6 +3,9 @@ package zzh.project.stocksystem.util;
 import java.util.Random;
 
 public class StringUtil {
+	/**
+	 * 产生随机数
+	 */
 	public static String getRandomString(int length) {
 		String base = "abcdefghijklmnopqrstuvwxyz0123456789";
 		Random random = new Random();
@@ -13,7 +16,7 @@ public class StringUtil {
 		}
 		return sb.toString();
 	}
-	
+
 	public static void main(String[] args) {
 		System.out.println(getRandomString(10));
 	}

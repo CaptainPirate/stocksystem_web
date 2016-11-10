@@ -53,6 +53,7 @@ public class AppController {
 		if (username != null && password != null) {
 			boolean validResult = userManager.validLogin(username, password);
 			if (validResult) {
+				// 生成一个access_token
 				String accessToken = StringUtil.getRandomString(15);
 				Calendar calendar = Calendar.getInstance();
 				calendar.set(Calendar.MONTH, calendar.get(Calendar.MONTH) + 1);
@@ -195,7 +196,7 @@ public class AppController {
 		logger.debug("getAccount resp " + response);
 		return gson.toJson(response);
 	}
-	
+
 	@RequestMapping(value = "/listTrade", produces = { "application/json;charset=UTF-8" })
 	@ResponseBody
 	public String listTrade(HttpServletRequest request) {
@@ -207,7 +208,7 @@ public class AppController {
 		logger.debug("listTrade resp " + response);
 		return gson.toJson(response);
 	}
-	
+
 	@RequestMapping(value = "/buy", produces = { "application/json;charset=UTF-8" })
 	@ResponseBody
 	public String buy(HttpServletRequest request, @RequestBody String body) {
@@ -228,8 +229,7 @@ public class AppController {
 		logger.debug("buy resp " + response);
 		return gson.toJson(response);
 	}
-	
-	
+
 	@RequestMapping(value = "/sell", produces = { "application/json;charset=UTF-8" })
 	@ResponseBody
 	public String sell(HttpServletRequest request, @RequestBody String body) {
@@ -250,7 +250,7 @@ public class AppController {
 		logger.debug("sell resp " + response);
 		return gson.toJson(response);
 	}
-	
+
 	@RequestMapping(value = "/listStock", produces = { "application/json;charset=UTF-8" })
 	@ResponseBody
 	public String listStock(HttpServletRequest request) {

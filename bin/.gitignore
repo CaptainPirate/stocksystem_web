@@ -1,3 +1,5 @@
-/zzh/
-/push.properties
+/db.properties
 /jpush.properties
+/logback.xml
+/mybatis-configuration.xml
+/zzh/

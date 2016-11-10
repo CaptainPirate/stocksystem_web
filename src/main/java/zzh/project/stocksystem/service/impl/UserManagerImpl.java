@@ -59,7 +59,8 @@ public class UserManagerImpl implements UserManager {
 	@Autowired
 	JPushClient jPushClient;
 
-	Timer timer = new Timer(true);
+	private Timer timer = new Timer(true);
+	private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
 	@Override
 	public boolean register(UserBean user) {
@@ -199,7 +200,6 @@ public class UserManagerImpl implements UserManager {
 	public List<TradeBean> listTrade(Long userId) {
 		List<Trade> trades = tradeMapper.findByUserId(userId);
 		List<TradeBean> beans = new ArrayList<>(trades.size());
-		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		for (Trade trade : trades) {
 			TradeBean bean = new TradeBean();
 			bean.stockCode = trade.getStockCode();
@@ -216,9 +216,7 @@ public class UserManagerImpl implements UserManager {
 
 	@Override
 	public void buy(Long userId, String gid, String name, float uPrice, int amount) throws StockSystemException {
-		/*
-		 * 购入后不会直接转入持有股票，需要先审核，这里模拟1分钟后自动审核
-		 */
+		// 购入后会优先从余额中扣除，但不会直接转入持有股票，需要后台审核
 		User user = userMapper.get(userId);
 		if (user != null) {
 			if (user.getBalance() < uPrice * amount) {
@@ -238,27 +236,14 @@ public class UserManagerImpl implements UserManager {
 			trade.setTradeIn(new Date());
 			tradeMapper.save(trade);
 
-			TimerTask task = new TimerTask() {
-				@Override
-				public void run() {
-					verified(trade.get_id());
-				}
-			};
-
-			try {
-				timer.schedule(task, 1000 * 60);
-			} catch (IllegalStateException e) {
-				timer = new Timer(true);
-				timer.schedule(task, 1000 * 60);
-			}
+			// 这里模拟30秒后自动审核
+			autoVerified(trade.get_id(), 1000 * 30);
 		}
 	}
 
 	@Override
 	public void sell(Long userId, String gid, String name, float uPrice, int amount) throws StockSystemException {
-		/*
-		 * 卖出后，从持有股票中移除相应数量，插入到待处理交易记录 但余额不会马上增加，需要先审核，这里模拟1分钟后自动审核
-		 */
+		// 卖出后，从持有股票中移除相应数量，但余额不会马上转入，需要先审核
 		User user = userMapper.get(userId);
 		if (user != null) {
 			Stock stock = stockMapper.findByUserIdAndStockCode(userId, gid);
@@ -284,17 +269,29 @@ public class UserManagerImpl implements UserManager {
 			trade.setTradeIn(new Date());
 			tradeMapper.save(trade);
 
-			timer.schedule(new TimerTask() {
-				@Override
-				public void run() {
-					verified(trade.get_id());
-				}
-			}, 1000 * 30);
+			// 这里模拟30秒后自动审核
+			autoVerified(trade.get_id(), 1000 * 30);
 		}
 	}
 
-	@Override
-	public void verified(Long tradeId) {
+	private void autoVerified(long tradeId, long duration) {
+		// 这里模拟30秒后自动审核
+		TimerTask task = new TimerTask() {
+			@Override
+			public void run() {
+				verified(tradeId);
+			}
+		};
+
+		try {
+			timer.schedule(task, duration);
+		} catch (IllegalStateException e) {
+			timer = new Timer(true);
+			timer.schedule(task, duration);
+		}
+	}
+	
+	private void verified(Long tradeId) {
 		Trade trade = tradeMapper.get(tradeId);
 		if (trade != null) {
 			User user = userMapper.get(trade.getUserId());
@@ -318,10 +315,13 @@ public class UserManagerImpl implements UserManager {
 			}
 			trade.setStatus(1);
 			tradeMapper.update(trade);
+			
+			// 向设备发起一个推送
 			try {
 				StringBuilder msg = new StringBuilder("您");
-				msg.append(trade.getTradeType() == 1 ? "购买" : "抛出");
-				msg.append("的 " + trade.getStockName() + " 已受理。");
+				msg.append("于" + dateFormat.format(trade.getTradeIn()))
+				.append(trade.getTradeType() == 1 ? "购买" : "抛出")
+				.append("的 " + trade.getStockName() + " 已受理。");
 				
 				PushPayload payload = PushPayload.newBuilder()
 						.setPlatform(Platform.android())

@@ -49,10 +49,9 @@ public class AuthInterceptor extends HandlerInterceptorAdapter {
 	@Override
 	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
 			throws Exception {
-		logger.debug("preHandle " + request.getRequestURI());
 		/*
-		 * 从request param中读取access_token进行匹配， 匹配规则遵循 内存 -> 数据
-		 * 匹配成功则在请求参数中新增一个用户唯一标记
+		 * 从request param中读取access_token对本地进行匹配， 本地匹配优先度 内存 -> 数据库
+		 * 匹配成功则在请求属性中新增一个用户唯一标记
 		 */
 		if (request.getAttribute(Const.REQUEST_CONVERT_USER_KEY) != null) {
 			return true;

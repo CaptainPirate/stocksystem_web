@@ -13,7 +13,6 @@ import cn.jpush.api.JPushClient;
 @PropertySource({ "classpath:jpush.properties" })
 public class PushConfig {
 
-	// 配置该Bean才可以使用@PropertySource
 	@Bean
 	public static PropertySourcesPlaceholderConfigurer placehodlerConfigurer() {
 		return new PropertySourcesPlaceholderConfigurer();

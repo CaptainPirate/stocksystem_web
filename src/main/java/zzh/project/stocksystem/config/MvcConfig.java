@@ -22,12 +22,13 @@ public class MvcConfig extends WebMvcConfigurationSupport {
 
 	@Override
 	public void addResourceHandlers(ResourceHandlerRegistry registry) {
+		// 默认资源映射
 		registry.addResourceHandler("/resources/**").addResourceLocations("/resources/");
 	}
 
 	@Bean
 	public InternalResourceViewResolver viewResolver() {
-		// 返回视图解析器
+		// 默认视图解析器
 		InternalResourceViewResolver viewResolver = new InternalResourceViewResolver();
 		viewResolver.setViewClass(JstlView.class);
 		viewResolver.setPrefix("/WEB-INF/views/");
@@ -43,9 +44,8 @@ public class MvcConfig extends WebMvcConfigurationSupport {
 	@Override
 	public void addInterceptors(InterceptorRegistry registry) {
 		// 插入一个从拦截器用于权限校验
-		registry.addInterceptor(authInterceptor())
-			.addPathPatterns("/app/**")
-			.excludePathPatterns("/app/register", "/app/login");
+		registry.addInterceptor(authInterceptor()).addPathPatterns("/app/**").excludePathPatterns("/app/register",
+				"/app/login");
 	}
 
 	@Bean

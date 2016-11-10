@@ -1,5 +1,8 @@
 package zzh.project.stocksystem.mapper;
 
+/**
+ * 数据库信息 
+ */
 public class DBInfo {
 	public static final class Table {
 		// 用户表

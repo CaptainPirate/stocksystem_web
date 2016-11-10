@@ -77,11 +77,6 @@ public interface UserManager {
 	public void sell(Long userId, String gid, String name, float uPrice, int amount) throws StockSystemException;
 	
 	/**
-	 * 审核
-	 */
-	public void verified(Long tradeId);
-	
-	/**
 	 * 列出持有股票
 	 */
 	public List<StockBean> listStock(Long userId);
