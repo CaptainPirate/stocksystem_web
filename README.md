@@ -1,7 +1,20 @@
 # StockSystem Web
 股票拟购后台
 
+架构基于SpringMvc，持久层使用MyBatis作为ORM框架。
+<br/>
+基于拦截器实现了access_token免登陆机制。
+<br/>
+推送服务使用 [极光推送](https://www.jiguang.cn) 
+<br/>
 前端项目源码 https://github.com/zackzhou915/stocksystem
+
+####References
+**SpringMvc** http://spring.oschina.mopaas.com/
+<br/>
+**MyBatis** http://www.mybatis.org/mybatis-3/zh/java-api.html
+<br/>
+**DBCP** http://commons.apache.org/proper/commons-dbcp/configuration.html
 
 ####License
 
