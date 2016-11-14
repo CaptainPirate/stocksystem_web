@@ -326,7 +326,8 @@ public class UserManagerImpl implements UserManager {
 			try {
 				StringBuilder msg = new StringBuilder("您");
 				msg.append("于" + dateFormat.format(trade.getTradeIn())).append(trade.getTradeType() == 1 ? "购买" : "抛出")
-						.append("的 " + trade.getStockName() + " 已受理。");
+						.append("的" + trade.getAmount() + "股")
+						.append(trade.getStockName() + " 已受理。");
 
 				PushPayload payload = PushPayload.newBuilder().setPlatform(Platform.android())
 						.setAudience(Audience.alias(user.getUsername()))
