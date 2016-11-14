@@ -65,6 +65,10 @@ public class UserManagerImpl implements UserManager {
 	@Override
 	public boolean register(UserBean user) {
 		try {
+			User localUser = userMapper.findByUsername(user.username);
+			if (localUser != null) {
+				return false;
+			}
 			userMapper.save(BeanConvert.convert(user));
 		} catch (Exception e) {
 			logger.error(e.getMessage());
@@ -290,7 +294,7 @@ public class UserManagerImpl implements UserManager {
 			timer.schedule(task, duration);
 		}
 	}
-	
+
 	private void verified(Long tradeId) {
 		Trade trade = tradeMapper.get(tradeId);
 		if (trade != null) {
@@ -298,7 +302,7 @@ public class UserManagerImpl implements UserManager {
 			if (trade.getTradeType() == 0) { // 卖出
 				user.setBalance(user.getBalance() + trade.getuPrice() * trade.getAmount());
 				userMapper.update(user);
-			} 
+			}
 
 			Stock stock = stockMapper.findByUserIdAndStockCode(trade.getUserId(), trade.getStockCode());
 			if (trade.getTradeType() == 1) {
@@ -315,19 +319,16 @@ public class UserManagerImpl implements UserManager {
 			}
 			trade.setStatus(1);
 			tradeMapper.update(trade);
-			
+
 			// 向设备发起一个推送
 			try {
 				StringBuilder msg = new StringBuilder("您");
-				msg.append("于" + dateFormat.format(trade.getTradeIn()))
-				.append(trade.getTradeType() == 1 ? "购买" : "抛出")
-				.append("的 " + trade.getStockName() + " 已受理。");
-				
-				PushPayload payload = PushPayload.newBuilder()
-						.setPlatform(Platform.android())
+				msg.append("于" + dateFormat.format(trade.getTradeIn())).append(trade.getTradeType() == 1 ? "购买" : "抛出")
+						.append("的 " + trade.getStockName() + " 已受理。");
+
+				PushPayload payload = PushPayload.newBuilder().setPlatform(Platform.android())
 						.setAudience(Audience.alias(user.getUsername()))
-						.setNotification(Notification.android(msg.toString(), "后端推送", null))
-						.build();
+						.setNotification(Notification.android(msg.toString(), "后端推送", null)).build();
 				PushResult result = jPushClient.sendPush(payload);
 				logger.debug("push result - " + result);
 			} catch (APIConnectionException e) {
