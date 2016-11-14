@@ -19,7 +19,7 @@ public interface UserManager {
 	/**
 	 * 注册
 	 */
-	public boolean register(UserBean user);
+	public void register(UserBean user)  throws StockSystemException;
 
 	/**
 	 * 关注

@@ -63,6 +63,20 @@ public interface UserMapper {
 	})
 	public User findByUsername(@Param("username") String username);
 	
+	@Select("SELECT * FROM " + TABLE_NAME + " WHERE " + NICK+ " = #{nick}")
+	@Results({
+		@Result(property="accessToken", column = ACCESS_TOKEN),
+		@Result(property="expiresIn", column = EXPIRES_IN), 
+	})
+	public User findByNick(@Param("nick") String nick);
+	
+	@Select("SELECT * FROM " + TABLE_NAME + " WHERE " + EMAIL+ " = #{email}")
+	@Results({
+		@Result(property="accessToken", column = ACCESS_TOKEN),
+		@Result(property="expiresIn", column = EXPIRES_IN), 
+	})
+	public User findByEmail(@Param("email") String email);
+	
 	@Select("SELECT * FROM " + TABLE_NAME + " WHERE " + ACCESS_TOKEN + " = #{accessToken}")
 	@Results({
 		@Result(property="accessToken", column = ACCESS_TOKEN),

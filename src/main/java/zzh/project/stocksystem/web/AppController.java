@@ -80,12 +80,14 @@ public class AppController {
 	public BasicResponse register(@RequestBody UserBean user) {
 		logger.debug("register req " + user);
 		BasicResponse response = new BasicResponse();
+		response.errcode = ErrorCode.SUCCESS;
 		if (user != null) {
 			logger.debug("register info ->" + gson.toJson(user));
-			boolean result = userManager.register(user);
-			if (!result) {
-				response.errcode = ErrorCode.ALREADY_EXISTS;
-				response.errmsg = "user is already exists";
+			try {
+				userManager.register(user);
+			} catch (StockSystemException e) {
+				response.errcode = e.getErrorCode();
+				response.errmsg = e.getMessage();
 			}
 		}
 		return response;
@@ -189,7 +191,7 @@ public class AppController {
 		AccountBean bean = userManager.getAccountInfo(userId);
 		if (bean == null) {
 			response.errcode = ErrorCode.NOT_EXITS;
-			response.errmsg = "not bound yet";
+			response.errmsg = "尚未绑定";
 		} else {
 			response.data = bean;
 		}

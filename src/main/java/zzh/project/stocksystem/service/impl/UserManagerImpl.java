@@ -63,18 +63,20 @@ public class UserManagerImpl implements UserManager {
 	private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
 	@Override
-	public boolean register(UserBean user) {
-		try {
-			User localUser = userMapper.findByUsername(user.username);
-			if (localUser != null) {
-				return false;
-			}
-			userMapper.save(BeanConvert.convert(user));
-		} catch (Exception e) {
-			logger.error(e.getMessage());
-			return false;
+	public void register(UserBean user) throws StockSystemException {
+		User localUser = userMapper.findByUsername(user.username);
+		if (localUser != null) {
+			throw new StockSystemException("用户名已存在", ErrorCode.ALREADY_EXISTS);
 		}
-		return true;
+		localUser = userMapper.findByNick(user.nick);
+		if (localUser != null) {
+			throw new StockSystemException("该昵称已被注册", ErrorCode.ALREADY_EXISTS);
+		}
+		localUser = userMapper.findByEmail(user.email);
+		if (localUser != null) {
+			throw new StockSystemException("该邮箱已被使用", ErrorCode.ALREADY_EXISTS);
+		}
+		userMapper.save(BeanConvert.convert(user));
 	}
 
 	@Override
