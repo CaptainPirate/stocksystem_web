@@ -10,6 +10,11 @@
 <br/>
 推送服务使用 [极光推送](https://www.jiguang.cn)，目前对普通用户免费，对小型项目可用快速集成推送
 
+#### Usage
+项目基于Gradle工具构建，需要前往Eclipse Marketplace下载Gradle IDE
+<br/>
+导入后右键项目菜单 Gradle -> Refresh All 会自动下载相关的jar包
+
 ####Future
 后端输入校验(待完善)
 <br/>
