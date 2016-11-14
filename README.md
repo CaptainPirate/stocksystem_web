@@ -10,11 +10,11 @@
 前端项目源码 https://github.com/zackzhou915/stocksystem
 
 ####References
-**SpringMvc** http://spring.oschina.mopaas.com/
+*SpringMvc* http://spring.oschina.mopaas.com/
 <br/>
-**MyBatis** http://www.mybatis.org/mybatis-3/zh/java-api.html
+*MyBatis* http://www.mybatis.org/mybatis-3/zh/java-api.html
 <br/>
-**DBCP** http://commons.apache.org/proper/commons-dbcp/configuration.html
+*DBCP* http://commons.apache.org/proper/commons-dbcp/configuration.html
 
 ####License
 
