@@ -4,11 +4,11 @@
 前端项目源码见 https://github.com/zackzhou915/stocksystem
 
 <br />
-架构基于SpringMvc，持久层使用MyBatis作为ORM框架，纯注解零配置。
+1. 架构基于SpringMvc，持久层使用MyBatis作为ORM框架，纯注解零配置。
 <br/>
-基于Spring的拦截器实现了访问鉴权和一个简单的access_token免登陆机制。
+2. 基于Spring的拦截器实现了访问鉴权和一个简单的access_token免登陆机制。
 <br/>
-推送服务使用 [极光推送](https://www.jiguang.cn)，目前对普通用户免费，对小型项目可用快速集成推送
+3. 推送服务使用 [极光推送](https://www.jiguang.cn)，目前对普通用户免费，对小型项目可用快速集成推送
 
 #### Usage
 项目基于Gradle工具构建，需要前往Eclipse Marketplace下载Gradle IDE
