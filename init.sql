@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS t_account (
 	real_name varchar(255) NOT NULL,
 	id_number varchar(255) NOT NULL,
 	password varchar(255) NOT NULL,
-	user_id integer NOT NULL,
+	user_id integer UNIQUE KEY NOT NULL,
 	FOREIGN KEY(user_id) REFERENCES t_user(_id)
 );
 
